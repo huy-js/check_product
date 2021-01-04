@@ -62,7 +62,7 @@ class App extends Component {
     }
     return (
       <NavigationContainer>
-          <RootStackScreen />
+        <RootStackScreen />
       </NavigationContainer>
     );
   }

@@ -17,6 +17,7 @@ import * as Animatable from 'react-native-animatable';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import * as actionTypes from '../src/redux/actions/types';
 const localhost = actionTypes.LOCALHOST;
+console.log(localhost);
 //const localhost = '192.168.0.153';
 class CheckProduct1 extends Component {
   constructor(props) {
@@ -29,6 +30,9 @@ class CheckProduct1 extends Component {
       nameOfCooperative: null,
       farmOwner: null,
       sold: false,
+      detailView: false,
+      isScan: false,
+      arrayBusiness: null,
     };
   }
 
@@ -65,32 +69,42 @@ class CheckProduct1 extends Component {
     fetch(`http://${localhost}:3456/search/${e.data}`)
       .then((response) => response.json())
       .then((data) => {
+        console.log(data[0].business);
         this.setState({
           nameOfCooperative: data[0].nameOfCooperative,
           addressOfCooperative: data[0].address,
-          phoneOfCooperative: data[0].phoneOwner,
+          //  phoneOfCooperative: data[0].phoneOwner,
           farmOwner: data[1].farmOwner,
-          farmOwnerAddress : data[1].address,
+          farmOwnerAddress: data[1].address,
           typeOfFarm: data[1].typeOfTree,
+          arrayBusiness: data[0].business,
           sold: data[2],
+          isScan: true,
         });
       });
   };
   onPressLink = async (data) => {
-    console.log(data);
-    Linking.openURL(`http://${localhost}:4345/search/${data}`).catch((err) =>
-      Alert.alert('QR convert', data),
-    );
+    // console.log(data);
+    // Linking.openURL(`http://${localhost}:4345/search/${data}`).catch((err) =>
+    //   Alert.alert('QR convert', data),
+    // );
+    console.log(this.state.arrayBusiness);
     this.setState({
-      nameOfCooperative: null,
-      farmOwner: null,
+      // nameOfCooperative: null,
+      // farmOwner: null,
+      detailView: true,
+    });
+  };
+  onPressGoBack = () => {
+    this.setState({
+      detailView: false,
     });
   };
 
   render() {
     return (
       <View style={styles.container}>
-        {this.state.nameOfCooperative === null ? (
+        {this.state.detailView === false ? (
           <View style={styles.container}>
             <StatusBar backgroundColor="#009387" barStyle="light-content" />
             <View style={styles.header}>
@@ -109,71 +123,128 @@ class CheckProduct1 extends Component {
               />
             </View>
             <View style={styles.footer}>
-            <View>
-              <Text style={styles.title}>Searching...{this.state.resdata}</Text>
-            </View>
+              <View>
+                {this.state.isScan ? (
+                  <View>
+                    <Text style={styles.title}>
+                      Kết quả tìm được
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          color: this.state.count === 1 ? '#05375a' : 'red',
+                        }}>
+                        ({this.state.count})
+                      </Text>
+                    </Text>
+                    <Text style={styles.text}>
+                      {'Hợp tác xã: ' + this.state.nameOfCooperative}
+                    </Text>
+                    <Text style={styles.text}>
+                      {'Địa chỉ hợp tác xã: ' + this.state.addressOfCooperative}
+                    </Text>
+                    <Text style={styles.subtitle}>Thông tin nông dân</Text>
+                    <Text style={styles.text}>
+                      {'Nông dân: ' + this.state.farmOwner}
+                    </Text>
+                    <Text style={styles.text}>
+                      {'Giống cây nông dân trồng: ' + this.state.typeOfFarm}
+                    </Text>
+                    <Text style={styles.subtitles}>
+                      Trạng thái sản phẩm:
+                      {this.state.sold ? ' Đã thanh toán' : ' Chưa thanh toán'}
+                    </Text>
+                    <View style={styles.button}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          this.onPressLink(this.state.linkInfor);
+                        }}>
+                        <LinearGradient
+                          colors={['#08d4c4', '#01ab9d']}
+                          style={styles.signIn}>
+                          <Text style={styles.textSign}>Xem Thêm</Text>
+                          <MaterialIcons
+                            name="navigate-next"
+                            color="#fff"
+                            size={20}
+                          />
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={styles.title}>
+                    Kết nối internet...{this.state.resdata}
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
         ) : (
-          <View style={styles.container}>
+          <View style={[styles.container]}>
             <StatusBar backgroundColor="#009387" barStyle="light-content" />
             <Animatable.View style={styles.footer} animation="fadeInLeft">
-            <Text style={styles.title}>
-                  Kết quả tìm được
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      color: this.state.count === 1 ? '#05375a' : 'red',
-                    }}>
-                    ({this.state.count})
-                  </Text>
+              {/* <Text style={styles.title}>
+                Kết quả tìm được
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: this.state.count === 1 ? '#05375a' : 'red',
+                  }}>
+                  ({this.state.count})
                 </Text>
-                <Text style={styles.subtitle}>
-                  Thông tin hợp tác xã
-                </Text>
-                <Text style={styles.text}>
-                  {'Hợp tác xã: ' + this.state.nameOfCooperative}
-                </Text>
-                <Text style={styles.text}>
-                  {'Địa chỉ hợp tác xã: ' + this.state.addressOfCooperative}
-                </Text>
-                <Text style={styles.text}>
-                  {'Điện thoại liên hệ: ' + this.state.phoneOfCooperative}
-                </Text>
-                <Text style={styles.subtitle}>
-                  Thông tin nông dân
-                </Text>
-                <Text style={styles.text}>
-                  {'Nông dân: ' + this.state.farmOwner}
-                </Text>
-                <Text style={styles.text}>
-                  {'Địa chỉ nông dân: ' + this.state.farmOwnerAddress}
-                </Text>
-                <Text style={styles.text}>
-                  {'Giống cây nông dân trồng: ' + this.state.typeOfFarm}
-                </Text>
-                <Text style={styles.subtitle}>
-                  Trạng thái: 
-                  {this.state.sold ? ' Đã thanh toán' : ' Chưa thanh toán'}
-                </Text>
-                <View style={styles.button}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      this.onPressLink(this.state.linkInfor);
-                    }}>
-                    <LinearGradient
-                      colors={['#08d4c4', '#01ab9d']}
-                      style={styles.signIn}>
-                      <Text style={styles.textSign}>Xem Thêm</Text>
-                      <MaterialIcons
-                        name="navigate-next"
-                        color="#fff"
-                        size={20}
-                      />
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              </Animatable.View>
+              </Text> */}
+              <Text style={styles.subtitle}>Thông tin hợp tác xã</Text>
+              <Text style={styles.text}>
+                {'Hợp tác xã: ' + this.state.nameOfCooperative}
+              </Text>
+              <Text style={styles.text}>
+                {'Địa chỉ hợp tác xã: ' + this.state.addressOfCooperative}
+              </Text>
+              <Text style={styles.subtitle}>Thông tin nông dân</Text>
+              <Text style={styles.text}>
+                {'Nông dân: ' + this.state.farmOwner}
+              </Text>
+              <Text style={styles.text}>
+                {'Địa chỉ nông dân: ' + this.state.farmOwnerAddress}
+              </Text>
+              <Text style={styles.text}>
+                {'Giống cây nông dân trồng: ' + this.state.typeOfFarm}
+              </Text>
+              <Text style={styles.subtitle}>Thông tin nhà phân phối</Text>
+              {this.state.arrayBusiness.map((e, index) => {
+                console.log(e);
+                return (
+                  <View key={index}>
+                    <Text style={styles.text}>
+                      {'Tên Công ty: ' + e.nameCompany}
+                    </Text>
+                    <Text style={styles.text}>{'Địa chỉ: ' + e.address}</Text>
+                  </View>
+                );
+              })}
+              <Text style={styles.subtitles}>
+                Trạng thái sản phẩm:
+                {this.state.sold ? ' Đã thanh toán' : ' Chưa thanh toán'}
+              </Text>
+
+              <View style={styles.button}>
+                <TouchableOpacity
+                  onPress={() => {
+                    this.onPressGoBack();
+                  }}>
+                  <LinearGradient
+                    colors={['#08d4c4', '#01ab9d']}
+                    style={styles.signIn}>
+                    <Text style={styles.textSign}>Ok</Text>
+                    {/* <MaterialIcons
+                      name="navigate-next"
+                      color="#fff"
+                      size={20}
+                    /> */}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </Animatable.View>
           </View>
         )}
       </View>
@@ -187,6 +258,10 @@ const {height} = Dimensions.get('screen');
 const height_logo = height * 0.28;
 
 const styles = StyleSheet.create({
+  containers: {
+    flex: 3,
+    backgroundColor: '#009387',
+  },
   container: {
     flex: 1,
     backgroundColor: '#009387',
@@ -197,7 +272,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footer: {
-    flex: 2,
+    flex: 3,
     backgroundColor: '#fff',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -211,6 +286,11 @@ const styles = StyleSheet.create({
   title: {
     color: '#05375a',
     fontSize: 30,
+    fontWeight: 'bold',
+  },
+  subtitles: {
+    color: '#05375a',
+    fontSize: 17,
     fontWeight: 'bold',
   },
   subtitle: {
